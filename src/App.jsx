@@ -30,7 +30,34 @@ const tableData = [
 ];
 function App() {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
-  
+
+  const switchToHarmonyTestnet = async () => {
+    if (ethereum && ethereum.isMetaMask) {
+      try {
+        await ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainId: "0x6357d2e0",
+              chainName: "Harmony Testnet Shard 0",
+              nativeCurrency: {
+                name: "ONE",
+                symbol: "ONE",
+                decimals: 18,
+              },
+              rpcUrls: ["https://api.s0.b.hmny.io"],
+              blockExplorerUrls: ["https://explorer.pops.one"],
+            },
+          ],
+        });
+      } catch (error) {
+        console.error("Failed to 4setup the network:", error);
+      }
+    } else {
+      console.error("Please install MetaMask!");
+    }
+  };
+
   return (
     <div className="w-full bg-[#141718] inner-shadow min-h-screen lg:h-screen py-10 px-[2%]">
       <div className="flex h-full items-stretch flex-col lg:flex-row">
@@ -88,8 +115,11 @@ function App() {
         </div>
         <div className="flex-1 shadow-black shadow-md rounded-lg py-6 px-[5%] text-white">
           <div className="flex mb-4 justify-center  lg:justify-end">
-            <button className="bg-[#f96355] shadow-[#f96355] shadow rounded-md py-2 px-10 font-semibold" onClick={connect}>
-              {status==="connected"?"Connected":"Connect"}
+            <button
+              className="bg-[#f96355] shadow-[#f96355] shadow rounded-md py-2 px-10 font-semibold"
+              onClick={switchToHarmonyTestnet}
+            >
+              {status === "connected" ? "Connected" : "Connect"}
             </button>
           </div>
           <h1 className="font-semibold text-2xl mb-4">
