@@ -7,8 +7,9 @@ function App() {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
   const initialAmounts = [0, 0, 0, 0, 0, 0];
   const [amounts, setAmounts] = useState(initialAmounts);
+  const [totalClaimed, setTotalClaimed] = useState(null);
   const [claimableAmount, setClaimableAmount] = useState(null);
-  const contractAddress = "0x26731Fa20bc3b02494b0DE2D2D8956d4E7cAD675";
+  const contractAddress = "0xBCe43Cfb3C5120F17274bFB8FB8e1dffd9226A1C";
 
   let contract;
 
@@ -79,6 +80,18 @@ function App() {
     }
   };
 
+  const fetchTotalClaimed = async () => {
+    if (status === "connected") {
+      try {
+        // Call the getClaimedAmount() function from the smart contract
+        const claimedAmount = await contract.getClaimedAmount();
+        setTotalClaimed(claimedAmount.toString());
+      } catch (error) {
+        console.error("Failed to fetch total claimed amount:", error);
+      }
+    }
+  };
+
   const claim = async (month) => {
     if (status !== "connected") {
       console.error("Not connected to the network");
@@ -121,6 +134,7 @@ function App() {
     };
 
     fetchClaimableAmounts();
+    fetchTotalClaimed();
   }, [status, contract]);
 
   return (
@@ -188,7 +202,7 @@ function App() {
             </button>
           </div>
           <h1 className="font-semibold text-2xl mb-4">
-            Harmony Launcher Advisor Vesting
+            Harmony Launcher Vesting
           </h1>
           <div className="grid grid-cols-12 border-slate-200 border-[2px] text-center">
             <div className="col-span-3 border-b border-slate-400">
@@ -242,6 +256,12 @@ function App() {
               Claim Phase 6 HARL
             </button>
           </div>
+          {totalClaimed !== null && (
+            <div className="text-center mt-4">
+              <p className="text-lg font-semibold text-white">Total Claimed:</p>
+              <p className="text-xl font-bold text-white">{totalClaimed}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
