@@ -50,6 +50,7 @@ function App() {
             },
           ],
         });
+        connect();
       } catch (error) {
         console.error("Failed to 4setup the network:", error);
       }
