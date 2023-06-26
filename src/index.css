@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.inner-shadow{
+    background: #151618;
+    box-shadow: 2px 2px 38px #000000, -2px -2px 32px #343940, inset -6px -6px 68px rgba(41, 45, 50, 1);
+}
+.neo-btn{
+background: #141718;
+box-shadow:  6px 6px 8px #0e1011,
+             -6px -6px 8px #1a1e1f;
+}
+.blue-btn{
+    -webkit-transform: skew(-15deg);
+    transform: skew(-15deg);
+    background: linear-gradient(165deg, #02a9ff, #0478c0);
+    box-shadow: 8px 8px 11px #0d0e0f, -8px -8px 11px #1d1e21;
+    border: none;
+}
