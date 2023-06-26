@@ -30,9 +30,7 @@ const tableData = [
 ];
 function App() {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
-  useEffect(()=>{
-    connect(  )
-  },[])
+  
   return (
     <div className="w-full bg-[#141718] inner-shadow min-h-screen lg:h-screen py-10 px-[2%]">
       <div className="flex h-full items-stretch flex-col lg:flex-row">
@@ -90,8 +88,8 @@ function App() {
         </div>
         <div className="flex-1 shadow-black shadow-md rounded-lg py-6 px-[5%] text-white">
           <div className="flex mb-4 justify-center  lg:justify-end">
-            <button className="bg-[#f96355] shadow-[#f96355] shadow rounded-md py-2 px-10 font-semibold">
-              Current Phase: 6
+            <button className="bg-[#f96355] shadow-[#f96355] shadow rounded-md py-2 px-10 font-semibold" onClick={connect}>
+              {status==="connected"?"Connected":"Connect"}
             </button>
           </div>
           <h1 className="font-semibold text-2xl mb-4">
