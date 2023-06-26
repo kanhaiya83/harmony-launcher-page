@@ -8,7 +8,7 @@ function App() {
   const initialAmounts = [0, 0, 0, 0, 0, 0];
   const [amounts, setAmounts] = useState(initialAmounts);
   const [claimableAmount, setClaimableAmount] = useState(null);
-  const contractAddress = "0x4d0daa0d9688dfa43a49cf4d11e37a0001d7f39c";
+  const contractAddress = "0x26731Fa20bc3b02494b0DE2D2D8956d4E7cAD675";
 
   let contract;
 
@@ -79,14 +79,39 @@ function App() {
     }
   };
 
+  const claim = async (month) => {
+    if (status !== "connected") {
+      console.error("Not connected to the network");
+      return;
+    }
+    try {
+      // here, I'm assuming the contract has a claim() function
+      const result = await contract.claim(month);
+      // handle result, if needed
+      console.log(`Claimed for month ${month}:`, result);
+    } catch (error) {
+      console.error(`Failed to claim for month ${month}:`, error);
+    }
+  };
+
   useEffect(() => {
     const fetchClaimableAmounts = async () => {
       if (status === "connected") {
         try {
           const claimableAmounts = [];
           for (let month = 1; month <= 6; month++) {
-            const amount = await contract.getClaimableAmount(month);
-            claimableAmounts.push(amount.toString());
+            const extraAmount = await contract.checkExtraAmount(month);
+            const claimableAmount = await contract.getClaimableAmount(month);
+            if (
+              extraAmount.toString() !== claimableAmount.toString() &&
+              claimableAmount.toString() !== "0"
+            ) {
+              claimableAmounts.push(
+                extraAmount.toString() + " + " + claimableAmount.toString()
+              );
+            } else {
+              claimableAmounts.push(extraAmount.toString());
+            }
           }
           setAmounts(claimableAmounts);
         } catch (error) {
@@ -180,22 +205,40 @@ function App() {
             })}
           </div>
           <div className="flex flex-wrap justify-between overflow-auto mt-12">
-            <button className="blue-btn py-2 px-10 rounded text-center m-2">
+            <button
+              onClick={() => claim(1)}
+              className="blue-btn py-2 px-10 rounded text-center m-2"
+            >
               Claim Phase 1 HARL
             </button>
-            <button className="blue-btn py-2 px-10 rounded text-center m-2">
+            <button
+              onClick={() => claim(2)}
+              className="blue-btn py-2 px-10 rounded text-center m-2"
+            >
               Claim Phase 2 HARL
             </button>
-            <button className="blue-btn py-2 px-10 rounded text-center m-2">
+            <button
+              onClick={() => claim(3)}
+              className="blue-btn py-2 px-10 rounded text-center m-2"
+            >
               Claim Phase 3 HARL
             </button>
-            <button className="blue-btn py-2 px-10 rounded text-center m-2">
+            <button
+              onClick={() => claim(4)}
+              className="blue-btn py-2 px-10 rounded text-center m-2"
+            >
               Claim Phase 4 HARL
             </button>
-            <button className="blue-btn py-2 px-10 rounded text-center m-2">
+            <button
+              onClick={() => claim(5)}
+              className="blue-btn py-2 px-10 rounded text-center m-2"
+            >
               Claim Phase 5 HARL
             </button>
-            <button className="blue-btn py-2 px-10 rounded text-center m-2">
+            <button
+              onClick={() => claim(6)}
+              className="blue-btn py-2 px-10 rounded text-center m-2"
+            >
               Claim Phase 6 HARL
             </button>
           </div>
