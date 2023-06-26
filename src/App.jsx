@@ -179,18 +179,24 @@ function App() {
               return <Row data={row} key={i} />;
             })}
           </div>
-          <div className="flex flex-col items-center gap-10 mt-12">
-            <button className="blue-btn py-2 px-10 rounded text-center">
+          <div className="flex flex-wrap justify-between overflow-auto mt-12">
+            <button className="blue-btn py-2 px-10 rounded text-center m-2">
               Claim Phase 1 HARL
             </button>
-            <button className="blue-btn py-2 px-10 rounded text-center">
+            <button className="blue-btn py-2 px-10 rounded text-center m-2">
               Claim Phase 2 HARL
             </button>
-            <button className="blue-btn py-2 px-10 rounded text-center">
+            <button className="blue-btn py-2 px-10 rounded text-center m-2">
               Claim Phase 3 HARL
             </button>
-            <button className="blue-btn py-2 px-10 rounded text-center">
+            <button className="blue-btn py-2 px-10 rounded text-center m-2">
               Claim Phase 4 HARL
+            </button>
+            <button className="blue-btn py-2 px-10 rounded text-center m-2">
+              Claim Phase 5 HARL
+            </button>
+            <button className="blue-btn py-2 px-10 rounded text-center m-2">
+              Claim Phase 6 HARL
             </button>
           </div>
         </div>
