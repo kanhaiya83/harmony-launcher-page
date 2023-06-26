@@ -9,7 +9,7 @@ function App() {
   const [amounts, setAmounts] = useState(initialAmounts);
   const [totalClaimed, setTotalClaimed] = useState(null);
   const [claimableAmount, setClaimableAmount] = useState(null);
-  const contractAddress = "0xBCe43Cfb3C5120F17274bFB8FB8e1dffd9226A1C";
+  const contractAddress = "0x310Fa9d192E4F6F2bA56D3224955d4cFD762451D";
 
   let contract;
 
@@ -19,38 +19,14 @@ function App() {
     contract = new ethers.Contract(contractAddress, ContractABI, signer);
   }
 
-  const tableData = [
-    {
-      phase: 1,
-      amount: amounts[0],
-      status: "Claimable",
-    },
-    {
-      phase: 2,
-      amount: amounts[1],
-      status: "Claimable",
-    },
-    {
-      phase: 3,
-      amount: amounts[2],
-      status: "Claimable",
-    },
-    {
-      phase: 4,
-      amount: amounts[3],
-      status: "Claimable",
-    },
-    {
-      phase: 5,
-      amount: amounts[4],
-      status: "Claimable",
-    },
-    {
-      phase: 6,
-      amount: amounts[5],
-      status: "Claimable",
-    },
-  ];
+  const [tableData, setTableData] = useState([
+    { phase: 1, amount: 0, status: "Claimable" },
+    { phase: 2, amount: 0, status: "Claimable" },
+    { phase: 3, amount: 0, status: "Claimable" },
+    { phase: 4, amount: 0, status: "Claimable" },
+    { phase: 5, amount: 0, status: "Claimable" },
+    { phase: 6, amount: 0, status: "Claimable" },
+  ]);
 
   const switchToHarmonyTestnet = async () => {
     if (ethereum && ethereum.isMetaMask) {
@@ -108,13 +84,28 @@ function App() {
   };
 
   useEffect(() => {
-    const fetchClaimableAmounts = async () => {
+    const fetchStatusAndClaimableAmounts = async () => {
       if (status === "connected") {
         try {
           const claimableAmounts = [];
+          const newTableData = [...tableData];
           for (let month = 1; month <= 6; month++) {
             const extraAmount = await contract.checkExtraAmount(month);
             const claimableAmount = await contract.getClaimableAmount(month);
+
+            // fetch status from contract
+            const monthHasPassed = await contract.hasMonthPassed(month);
+            const isClaimed = await contract.isClaimed(month);
+            let currentStatus = "Locked";
+            if (monthHasPassed) {
+              if (isClaimed) {
+                currentStatus = "Claimed";
+              } else {
+                currentStatus = "Claimable";
+              }
+            }
+            newTableData[month - 1].status = currentStatus;
+
             if (
               extraAmount.toString() !== claimableAmount.toString() &&
               claimableAmount.toString() !== "0"
@@ -127,13 +118,19 @@ function App() {
             }
           }
           setAmounts(claimableAmounts);
+          setTableData((prevTableData) => {
+            return prevTableData.map((data, index) => ({
+              ...data,
+              amount: claimableAmounts[index],
+            }));
+          });
         } catch (error) {
           console.error("Failed to fetch claimable amounts:", error);
         }
       }
     };
 
-    fetchClaimableAmounts();
+    fetchStatusAndClaimableAmounts();
     fetchTotalClaimed();
   }, [status, contract]);
 
