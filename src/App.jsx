@@ -87,9 +87,20 @@ function App() {
     const fetchStatusAndClaimableAmounts = async () => {
       if (status === "connected") {
         try {
+          let userVestingPeriod = 0;
+          while (true) {
+            const claimableAmount = await contract.checkExtraAmount(
+              userVestingPeriod + 1
+            );
+            if (claimableAmount.toString() === "0") {
+              break;
+            }
+            userVestingPeriod++;
+          }
+
           const claimableAmounts = [];
-          const newTableData = [...tableData];
-          for (let month = 1; month <= 6; month++) {
+          const newTableData = [];
+          for (let month = 1; month <= userVestingPeriod; month++) {
             const extraAmount = await contract.checkExtraAmount(month);
             const claimableAmount = await contract.getClaimableAmount(month);
 
@@ -104,26 +115,27 @@ function App() {
                 currentStatus = "Claimable";
               }
             }
-            newTableData[month - 1].status = currentStatus;
 
+            let totalAmount;
             if (
               extraAmount.toString() !== claimableAmount.toString() &&
               claimableAmount.toString() !== "0"
             ) {
-              claimableAmounts.push(
-                extraAmount.toString() + " + " + claimableAmount.toString()
-              );
+              totalAmount =
+                extraAmount.toString() + " + " + claimableAmount.toString();
             } else {
-              claimableAmounts.push(extraAmount.toString());
+              totalAmount = extraAmount.toString();
             }
+
+            claimableAmounts.push(totalAmount);
+            newTableData.push({
+              phase: month,
+              amount: totalAmount,
+              status: currentStatus,
+            });
           }
           setAmounts(claimableAmounts);
-          setTableData((prevTableData) => {
-            return prevTableData.map((data, index) => ({
-              ...data,
-              amount: claimableAmounts[index],
-            }));
-          });
+          setTableData(newTableData); // set the state
         } catch (error) {
           console.error("Failed to fetch claimable amounts:", error);
         }
