@@ -1,40 +1,55 @@
 import { useMetaMask } from "metamask-react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { ethers } from "ethers";
+import ContractABI from "../abi.json";
 
-const tableData = [
-  {
-    phase: 1,
-    amount: 0,
-    status: "Claimable",
-  },
-  {
-    phase: 2,
-    amount: 0,
-    status: "Claimable",
-  },
-  {
-    phase: 3,
-    amount: 0,
-    status: "Claimable",
-  },
-  {
-    phase: 4,
-    amount: 0,
-    status: "Claimable",
-  },
-  {
-    phase: 5,
-    amount: 0,
-    status: "Claimable",
-  },
-  {
-    phase: 6,
-    amount: 0,
-    status: "Claimable",
-  },
-];
 function App() {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
+  const initialAmounts = [0, 0, 0, 0, 0, 0];
+  const [amounts, setAmounts] = useState(initialAmounts);
+  const [claimableAmount, setClaimableAmount] = useState(null);
+  const contractAddress = "0x4d0daa0d9688dfa43a49cf4d11e37a0001d7f39c";
+
+  let contract;
+
+  if (ethereum) {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    contract = new ethers.Contract(contractAddress, ContractABI, signer);
+  }
+
+  const tableData = [
+    {
+      phase: 1,
+      amount: amounts[0],
+      status: "Claimable",
+    },
+    {
+      phase: 2,
+      amount: amounts[1],
+      status: "Claimable",
+    },
+    {
+      phase: 3,
+      amount: amounts[2],
+      status: "Claimable",
+    },
+    {
+      phase: 4,
+      amount: amounts[3],
+      status: "Claimable",
+    },
+    {
+      phase: 5,
+      amount: amounts[4],
+      status: "Claimable",
+    },
+    {
+      phase: 6,
+      amount: amounts[5],
+      status: "Claimable",
+    },
+  ];
 
   const switchToHarmonyTestnet = async () => {
     if (ethereum && ethereum.isMetaMask) {
@@ -63,6 +78,25 @@ function App() {
       console.error("Please install MetaMask!");
     }
   };
+
+  useEffect(() => {
+    const fetchClaimableAmounts = async () => {
+      if (status === "connected") {
+        try {
+          const claimableAmounts = [];
+          for (let month = 1; month <= 6; month++) {
+            const amount = await contract.getClaimableAmount(month);
+            claimableAmounts.push(amount.toString());
+          }
+          setAmounts(claimableAmounts);
+        } catch (error) {
+          console.error("Failed to fetch claimable amounts:", error);
+        }
+      }
+    };
+
+    fetchClaimableAmounts();
+  }, [status, contract]);
 
   return (
     <div className="w-full bg-[#141718] inner-shadow min-h-screen lg:h-screen py-10 px-[2%]">
