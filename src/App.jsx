@@ -8,22 +8,27 @@ const tableData = [
     status: "Claimable",
   },
   {
-    phase: 1,
+    phase: 2,
     amount: 0,
     status: "Claimable",
   },
   {
-    phase: 1,
+    phase: 3,
     amount: 0,
     status: "Claimable",
   },
   {
-    phase: 1,
+    phase: 4,
     amount: 0,
     status: "Claimable",
   },
   {
-    phase: 1,
+    phase: 5,
+    amount: 0,
+    status: "Claimable",
+  },
+  {
+    phase: 6,
     amount: 0,
     status: "Claimable",
   },
