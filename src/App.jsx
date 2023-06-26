@@ -1,31 +1,38 @@
+import { useMetaMask } from "metamask-react";
+import { useEffect } from "react";
+
 const tableData = [
   {
-    phase:1,
-    amount:0,
-    status:"Claimable"
+    phase: 1,
+    amount: 0,
+    status: "Claimable",
   },
   {
-    phase:1,
-    amount:0,
-    status:"Claimable"
+    phase: 1,
+    amount: 0,
+    status: "Claimable",
   },
   {
-    phase:1,
-    amount:0,
-    status:"Claimable"
+    phase: 1,
+    amount: 0,
+    status: "Claimable",
   },
   {
-    phase:1,
-    amount:0,
-    status:"Claimable"
+    phase: 1,
+    amount: 0,
+    status: "Claimable",
   },
   {
-    phase:1,
-    amount:0,
-    status:"Claimable"
+    phase: 1,
+    amount: 0,
+    status: "Claimable",
   },
-]
+];
 function App() {
+  const { status, connect, account, chainId, ethereum } = useMetaMask();
+  useEffect(()=>{
+    connect(  )
+  },[])
   return (
     <div className="w-full bg-[#141718] inner-shadow min-h-screen lg:h-screen py-10 px-[2%]">
       <div className="flex h-full items-stretch flex-col lg:flex-row">
@@ -47,16 +54,36 @@ function App() {
             launch successfully.
           </p>
           <div className="flex gap-6 mt-10">
-            <a href='https://twitter.com/harmonylauncher' target="_blank" rel="noreferrer" className="neo-btn rounded-md px-4 py-2  lg:px-6 lg:py-4 flex items-center justify-center">
+            <a
+              href="https://twitter.com/harmonylauncher"
+              target="_blank"
+              rel="noreferrer"
+              className="neo-btn rounded-md px-4 py-2 lg:px-6 lg:py-4 flex items-center justify-center"
+            >
               <img src="/twitter.svg" alt="" className="w-8" />
             </a>
-            <a href='https://harmonylauncher.medium.com/' target="_blank" rel="noreferrer" className="neo-btn rounded-md px-4 py-2  lg:px-6 lg:py-4 flex items-center justify-center">
+            <a
+              href="https://harmonylauncher.medium.com/"
+              target="_blank"
+              rel="noreferrer"
+              className="neo-btn rounded-md px-4 py-2 lg:px-6 lg:py-4 flex items-center justify-center"
+            >
               <img src="/medium.svg" alt="" className="w-8" />
             </a>
-            <a href='https://t.me/harmonylauncher' target="_blank" rel="noreferrer" className="neo-btn rounded-md px-4 py-2  lg:px-6 lg:py-4 flex items-center justify-center">
+            <a
+              href="https://t.me/harmonylauncher"
+              target="_blank"
+              rel="noreferrer"
+              className="neo-btn rounded-md px-4 py-2 lg:px-6 lg:py-4 flex items-center justify-center"
+            >
               <img src="/telegram.svg" alt="" className="w-8" />
             </a>
-            <a href='https://harmonylauncher.io/' target="_blank" rel="noreferrer" className="neo-btn rounded-md px-4 py-2  lg:px-6 lg:py-4 flex items-center justify-center">
+            <a
+              href="https://harmonylauncher.io/"
+              target="_blank"
+              rel="noreferrer"
+              className="neo-btn rounded-md px-4 py-2 lg:px-6 lg:py-4 flex items-center justify-center"
+            >
               <img src="/globe.svg" alt="" className="w-8" />
             </a>
           </div>
@@ -80,11 +107,9 @@ function App() {
             <div className="col-span-5 border-b border-slate-400">
               <h1 className="font-semibold text-lg py-1">Status</h1>
             </div>
-            {
-              tableData.map((row,i)=>{
-                return <Row data={row} key={i}/>
-              })
-            }
+            {tableData.map((row, i) => {
+              return <Row data={row} key={i} />;
+            })}
           </div>
           <div className="flex flex-col items-center gap-10 mt-12">
             <button className="blue-btn py-2 px-10 rounded text-center">
@@ -105,17 +130,19 @@ function App() {
     </div>
   );
 }
-const Row=({data})=>{
-  return <>
-   <div className="col-span-3 border-b border-slate-400">
-              <p className="text-slate-300 py-1">{data.phase}</p>
-            </div>
-            <div className="col-span-4 border-b border-x border-slate-400">
-              <p className="text-slate-300 py-1">{data.amount}</p>
-            </div>
-            <div className="col-span-5 border-b border-slate-400">
-              <p className="text-slate-300 py-1">{data.status}</p>
-            </div>
-  </>
-}
+const Row = ({ data }) => {
+  return (
+    <>
+      <div className="col-span-3 border-b border-slate-400">
+        <p className="text-slate-300 py-1">{data.phase}</p>
+      </div>
+      <div className="col-span-4 border-b border-x border-slate-400">
+        <p className="text-slate-300 py-1">{data.amount}</p>
+      </div>
+      <div className="col-span-5 border-b border-slate-400">
+        <p className="text-slate-300 py-1">{data.status}</p>
+      </div>
+    </>
+  );
+};
 export default App;
