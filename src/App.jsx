@@ -1,36 +1,151 @@
 import { useMetaMask } from "metamask-react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { ethers } from "ethers";
+import ContractABI from "../abi.json";
 
-const tableData = [
-  {
-    phase: 1,
-    amount: 0,
-    status: "Claimable",
-  },
-  {
-    phase: 1,
-    amount: 0,
-    status: "Claimable",
-  },
-  {
-    phase: 1,
-    amount: 0,
-    status: "Claimable",
-  },
-  {
-    phase: 1,
-    amount: 0,
-    status: "Claimable",
-  },
-  {
-    phase: 1,
-    amount: 0,
-    status: "Claimable",
-  },
-];
 function App() {
   const { status, connect, account, chainId, ethereum } = useMetaMask();
-  
+  const initialAmounts = [0, 0, 0, 0, 0, 0];
+  const [amounts, setAmounts] = useState(initialAmounts);
+  const [totalClaimed, setTotalClaimed] = useState(null);
+  const [claimableAmount, setClaimableAmount] = useState(null);
+  const contractAddress = "0x310Fa9d192E4F6F2bA56D3224955d4cFD762451D";
+
+  let contract;
+
+  if (ethereum) {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    contract = new ethers.Contract(contractAddress, ContractABI, signer);
+  }
+
+  const [tableData, setTableData] = useState([
+    { phase: 1, amount: 0, status: "Claimable" },
+    { phase: 2, amount: 0, status: "Claimable" },
+    { phase: 3, amount: 0, status: "Claimable" },
+    { phase: 4, amount: 0, status: "Claimable" },
+    { phase: 5, amount: 0, status: "Claimable" },
+    { phase: 6, amount: 0, status: "Claimable" },
+  ]);
+
+  const switchToHarmonyTestnet = async () => {
+    if (ethereum && ethereum.isMetaMask) {
+      try {
+        await ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainId: "0x6357d2e0",
+              chainName: "Harmony Testnet Shard 0",
+              nativeCurrency: {
+                name: "ONE",
+                symbol: "ONE",
+                decimals: 18,
+              },
+              rpcUrls: ["https://api.s0.b.hmny.io"],
+              blockExplorerUrls: ["https://explorer.pops.one"],
+            },
+          ],
+        });
+        connect();
+      } catch (error) {
+        console.error("Failed to 4setup the network:", error);
+      }
+    } else {
+      console.error("Please install MetaMask!");
+    }
+  };
+
+  const fetchTotalClaimed = async () => {
+    if (status === "connected") {
+      try {
+        // Call the getClaimedAmount() function from the smart contract
+        const claimedAmount = await contract.getClaimedAmount();
+        setTotalClaimed(claimedAmount.toString());
+      } catch (error) {
+        console.error("Failed to fetch total claimed amount:", error);
+      }
+    }
+  };
+
+  const claim = async (month) => {
+    if (status !== "connected") {
+      console.error("Not connected to the network");
+      return;
+    }
+    try {
+      // here, I'm assuming the contract has a claim() function
+      const result = await contract.claim(month);
+      // handle result, if needed
+      console.log(`Claimed for month ${month}:`, result);
+    } catch (error) {
+      console.error(`Failed to claim for month ${month}:`, error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchStatusAndClaimableAmounts = async () => {
+      if (status === "connected") {
+        try {
+          let userVestingPeriod = 0;
+          while (true) {
+            const claimableAmount = await contract.checkExtraAmount(
+              userVestingPeriod + 1
+            );
+            if (claimableAmount.toString() === "0") {
+              break;
+            }
+            userVestingPeriod++;
+          }
+
+          const claimableAmounts = [];
+          const newTableData = [];
+          for (let month = 1; month <= userVestingPeriod; month++) {
+            const extraAmount = await contract.checkExtraAmount(month);
+            const claimableAmount = await contract.getClaimableAmount(month);
+
+            // fetch status from contract
+            const monthHasPassed = await contract.hasMonthPassed(month);
+            const isClaimed = await contract.isClaimed(month);
+            let currentStatus = "Locked";
+            if (monthHasPassed) {
+              if (isClaimed) {
+                currentStatus = "Claimed";
+              } else {
+                currentStatus = "Claimable";
+              }
+            }
+
+            let totalAmount;
+            if (
+              extraAmount.toString() !== claimableAmount.toString() &&
+              claimableAmount.toString() !== "0"
+            ) {
+              totalAmount =
+                extraAmount.toString() + " + " + claimableAmount.toString();
+            } else {
+              totalAmount = extraAmount.toString();
+            }
+
+            claimableAmounts.push(totalAmount);
+            newTableData.push({
+              phase: month,
+              amount: totalAmount,
+              status: currentStatus,
+            });
+          }
+          setAmounts(claimableAmounts);
+          setTableData(newTableData); // set the state
+        } catch (error) {
+          console.error("Failed to fetch claimable amounts:", error);
+        }
+      }
+    };
+
+    fetchStatusAndClaimableAmounts();
+    fetchTotalClaimed();
+  }, [status, contract]);
+
   return (
     <div className="w-full bg-[#141718] inner-shadow min-h-screen lg:h-screen py-10 px-[2%]">
       <div className="flex h-full items-stretch flex-col lg:flex-row">
@@ -88,12 +203,15 @@ function App() {
         </div>
         <div className="flex-1 shadow-black shadow-md rounded-lg py-6 px-[5%] text-white">
           <div className="flex mb-4 justify-center  lg:justify-end">
-            <button className="bg-[#f96355] shadow-[#f96355] shadow rounded-md py-2 px-10 font-semibold" onClick={connect}>
-              {status==="connected"?"Connected":"Connect"}
+            <button
+              className="bg-[#f96355] shadow-[#f96355] shadow rounded-md py-2 px-10 font-semibold"
+              onClick={switchToHarmonyTestnet}
+            >
+              {status === "connected" ? "Connected" : "Connect"}
             </button>
           </div>
           <h1 className="font-semibold text-2xl mb-4">
-            Harmony Launcher Advisor Vesting
+            Harmony Launcher Vesting
           </h1>
           <div className="grid grid-cols-12 border-slate-200 border-[2px] text-center">
             <div className="col-span-3 border-b border-slate-400">
@@ -109,20 +227,50 @@ function App() {
               return <Row data={row} key={i} />;
             })}
           </div>
-          <div className="flex flex-col items-center gap-10 mt-12">
-            <button className="blue-btn py-2 px-10 rounded text-center">
+          <div className="flex flex-wrap justify-between overflow-auto mt-12">
+            <button
+              onClick={() => claim(1)}
+              className="blue-btn py-2 px-10 rounded text-center m-2"
+            >
               Claim Phase 1 HARL
             </button>
-            <button className="blue-btn py-2 px-10 rounded text-center">
+            <button
+              onClick={() => claim(2)}
+              className="blue-btn py-2 px-10 rounded text-center m-2"
+            >
               Claim Phase 2 HARL
             </button>
-            <button className="blue-btn py-2 px-10 rounded text-center">
+            <button
+              onClick={() => claim(3)}
+              className="blue-btn py-2 px-10 rounded text-center m-2"
+            >
               Claim Phase 3 HARL
             </button>
-            <button className="blue-btn py-2 px-10 rounded text-center">
+            <button
+              onClick={() => claim(4)}
+              className="blue-btn py-2 px-10 rounded text-center m-2"
+            >
               Claim Phase 4 HARL
             </button>
+            <button
+              onClick={() => claim(5)}
+              className="blue-btn py-2 px-10 rounded text-center m-2"
+            >
+              Claim Phase 5 HARL
+            </button>
+            <button
+              onClick={() => claim(6)}
+              className="blue-btn py-2 px-10 rounded text-center m-2"
+            >
+              Claim Phase 6 HARL
+            </button>
           </div>
+          {totalClaimed !== null && (
+            <div className="text-center mt-4">
+              <p className="text-lg font-semibold text-white">Total Claimed:</p>
+              <p className="text-xl font-bold text-white">{totalClaimed}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
