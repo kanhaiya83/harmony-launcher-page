@@ -9,7 +9,7 @@ function App() {
   const [amounts, setAmounts] = useState(initialAmounts);
   const [totalClaimed, setTotalClaimed] = useState(null);
   const [claimableAmount, setClaimableAmount] = useState(null);
-  const contractAddress = "0x9e6B2cE50c874c0aAfa74FE99F4F2310ef34e15a";
+  const contractAddress = "0x5624FD15Df313bbe6c481D06CC2FF681Aed60d51";
 
   let contract;
 
