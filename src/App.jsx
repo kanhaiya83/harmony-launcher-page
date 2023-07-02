@@ -9,7 +9,7 @@ function App() {
   const [amounts, setAmounts] = useState(initialAmounts);
   const [totalClaimed, setTotalClaimed] = useState(null);
   const [claimableAmount, setClaimableAmount] = useState(null);
-  const contractAddress = "0x310Fa9d192E4F6F2bA56D3224955d4cFD762451D";
+  const contractAddress = "0x9e6B2cE50c874c0aAfa74FE99F4F2310ef34e15a";
 
   let contract;
 
@@ -20,12 +20,12 @@ function App() {
   }
 
   const [tableData, setTableData] = useState([
-    { phase: 1, amount: 0, status: "Claimable" },
-    { phase: 2, amount: 0, status: "Claimable" },
-    { phase: 3, amount: 0, status: "Claimable" },
-    { phase: 4, amount: 0, status: "Claimable" },
-    { phase: 5, amount: 0, status: "Claimable" },
-    { phase: 6, amount: 0, status: "Claimable" },
+    { phase: 1, amount: 0, status: "..." },
+    { phase: 2, amount: 0, status: "..." },
+    { phase: 3, amount: 0, status: "..." },
+    { phase: 4, amount: 0, status: "..." },
+    { phase: 5, amount: 0, status: "..." },
+    { phase: 6, amount: 0, status: "..." },
   ]);
 
   const switchToHarmonyTestnet = async () => {
@@ -35,21 +35,21 @@ function App() {
           method: "wallet_addEthereumChain",
           params: [
             {
-              chainId: "0x6357d2e0",
-              chainName: "Harmony Testnet Shard 0",
+              chainId: "0x63564c40",
+              chainName: "Harmony Mainnet Shard 0",
               nativeCurrency: {
                 name: "ONE",
                 symbol: "ONE",
                 decimals: 18,
               },
-              rpcUrls: ["https://api.s0.b.hmny.io"],
-              blockExplorerUrls: ["https://explorer.pops.one"],
+              rpcUrls: ["https://api.s0.t.hmny.io"],
+              blockExplorerUrls: ["https://explorer.harmony.one"],
             },
           ],
         });
         connect();
       } catch (error) {
-        console.error("Failed to 4setup the network:", error);
+        console.error("Failed to setup the network:", error);
       }
     } else {
       console.error("Please install MetaMask!");
