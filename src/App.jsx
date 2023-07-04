@@ -19,14 +19,52 @@ function App() {
     contract = new ethers.Contract(contractAddress, ContractABI, signer);
   }
 
-  const [tableData, setTableData] = useState([
-    { phase: 1, amount: 0, status: "..." },
-    { phase: 2, amount: 0, status: "..." },
-    { phase: 3, amount: 0, status: "..." },
-    { phase: 4, amount: 0, status: "..." },
-    { phase: 5, amount: 0, status: "..." },
-    { phase: 6, amount: 0, status: "..." },
-  ]);
+  const endDates = [
+    new Date("July 2, 2023 15:40:41"),
+    new Date("August 1, 2023 15:40:41"),
+    new Date("August 31, 2023 15:40:41"),
+    new Date("September 30, 2023 15:40:41"),
+    new Date("October 30, 2023 15:40:41"),
+    new Date("November 29, 2023 15:40:41"),
+  ];
+
+  const [tableData, setTableData] = useState(
+    endDates.map((date, i) => ({
+      phase: i + 1,
+      amount: 0,
+      status: "...",
+      endDate: date,
+    }))
+  );
+
+  const [timers, setTimers] = useState([]);
+
+  const getTimeRemaining = (endDate) => {
+    const total = Date.parse(endDate) - Date.parse(new Date());
+
+    if (total <= 0) {
+      return {
+        total: 0,
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+      };
+    }
+
+    const seconds = Math.floor((total / 1000) % 60);
+    const minutes = Math.floor((total / 1000 / 60) % 60);
+    const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+    const days = Math.floor(total / (1000 * 60 * 60 * 24));
+
+    return {
+      total,
+      days,
+      hours,
+      minutes,
+      seconds,
+    };
+  };
 
   const switchToHarmonyTestnet = async () => {
     if (ethereum && ethereum.isMetaMask) {
@@ -132,10 +170,18 @@ function App() {
               phase: month,
               amount: totalAmount,
               status: currentStatus,
+              endDate: endDates[month - 1],
             });
           }
           setAmounts(claimableAmounts);
-          setTableData(newTableData); // set the state
+          setTableData(newTableData);
+          setTimers((prevTimers) => {
+            const newTimers = [...prevTimers];
+            for (let month = 1; month <= userVestingPeriod; month++) {
+              newTimers[month - 1] = getTimeRemaining(endDates[month - 1]);
+            }
+            return newTimers;
+          });
         } catch (error) {
           console.error("Failed to fetch claimable amounts:", error);
         }
@@ -145,6 +191,25 @@ function App() {
     fetchStatusAndClaimableAmounts();
     fetchTotalClaimed();
   }, [status, contract]);
+
+  useEffect(() => {
+    // Create an array to hold the interval ids
+    const intervals = [];
+
+    // Create a separate interval for each timer
+    for (let i = 0; i < tableData.length; i++) {
+      intervals[i] = setInterval(() => {
+        setTimers((prevTimers) => {
+          const newTimers = [...prevTimers];
+          newTimers[i] = getTimeRemaining(tableData[i].endDate);
+          return newTimers;
+        });
+      }, 1000);
+    }
+
+    // Clear the intervals when the component unmounts
+    return () => intervals.forEach((interval) => clearInterval(interval));
+  }, [tableData]);
 
   return (
     <div className="w-full bg-[#141718] inner-shadow min-h-screen lg:h-screen py-10 px-[2%]">
@@ -224,46 +289,21 @@ function App() {
               <h1 className="font-semibold text-lg py-1">Status</h1>
             </div>
             {tableData.map((row, i) => {
-              return <Row data={row} key={i} />;
+              return <Row data={row} timer={timers[i]} key={i} />;
             })}
           </div>
           <div className="flex flex-wrap justify-between overflow-auto mt-12">
-            <button
-              onClick={() => claim(1)}
-              className="blue-btn py-2 px-10 rounded text-center m-2"
-            >
-              Claim Phase 1 HARL
-            </button>
-            <button
-              onClick={() => claim(2)}
-              className="blue-btn py-2 px-10 rounded text-center m-2"
-            >
-              Claim Phase 2 HARL
-            </button>
-            <button
-              onClick={() => claim(3)}
-              className="blue-btn py-2 px-10 rounded text-center m-2"
-            >
-              Claim Phase 3 HARL
-            </button>
-            <button
-              onClick={() => claim(4)}
-              className="blue-btn py-2 px-10 rounded text-center m-2"
-            >
-              Claim Phase 4 HARL
-            </button>
-            <button
-              onClick={() => claim(5)}
-              className="blue-btn py-2 px-10 rounded text-center m-2"
-            >
-              Claim Phase 5 HARL
-            </button>
-            <button
-              onClick={() => claim(6)}
-              className="blue-btn py-2 px-10 rounded text-center m-2"
-            >
-              Claim Phase 6 HARL
-            </button>
+            {tableData.map((row, i) => {
+              return (
+                <button
+                  key={i}
+                  onClick={() => claim(row.phase)}
+                  className="blue-btn py-2 px-10 rounded text-center m-2"
+                >
+                  Claim Phase {row.phase} HARL
+                </button>
+              );
+            })}
           </div>
           {totalClaimed !== null && (
             <div className="text-center mt-4">
@@ -276,11 +316,15 @@ function App() {
     </div>
   );
 }
-const Row = ({ data }) => {
+const Row = ({ data, timer }) => {
   return (
     <>
       <div className="col-span-3 border-b border-slate-400">
-        <p className="text-slate-300 py-1">{data.phase}</p>
+        <p className="text-slate-300 py-1">
+          {timer
+            ? `${timer.days}d ${timer.hours}h ${timer.minutes}m ${timer.seconds}s`
+            : "..."}
+        </p>
       </div>
       <div className="col-span-4 border-b border-x border-slate-400">
         <p className="text-slate-300 py-1">{data.amount}</p>
